@@ -49,3 +49,19 @@ Since very few of the microcontroller pins are used and those are on the corners
   - If a minute has passed w/o a LoRa message, set LED to yellow.
   - Handle any HTTP requests
 
+### Remote Access
+
+The Monitor is designed to work within a local WiFi network or without any network at all. While one could make a hole in a firewall to allow access to an instance of the Monitor in order to access its web pages, another solution which involves a remote web server that an instance of the Monitor can access. On that server, two PHP scripts are installed to persist and retrieve metrics. If the Monitor is configured with a Remote Server address, whenever the metrics change it will send an HTTP GET request with the metrics to be persisted to the server as follows:
+
+```
+GET /storeit.php?<data to be persisted> HTTP/1.0
+```
+
+The data is a comma separated list of metric values. For details about the format, please refer to the code as changes would likely not appear here.
+
+With that in place anyone can load `lwcmon.html` and it will display the metrics just as if they were accessed through the Monitor's root page. Note that the server address in `lwcmon.html` must match that configured into the Monitor instance that is persisting the data. Apart from having the correct server address, the server must have `getit.php` loaded for the whole thing to work.
+
+Note: there should only ever be one instance of the Monitor persisting data to any given server. Also, the instance of the Monitor that is persisting data can be a naked Heltec ESP32 LoRa V2 (i.e., it doesn't need the LED or buzzer).
+
+![lwcmon.html](/assets/lwcmon-html.jpg)
+
