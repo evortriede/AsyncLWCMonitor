@@ -23,7 +23,7 @@ typedef struct
   bool storeToCloud;
 } config_data_t;
 
-config_data_t configData={"","","ChangeMe","admin","LWCMonitor",9,true};
+config_data_t configData={"","","ChangeMe","admin","LWCMonitor",9,false};
 
 typedef struct 
 {
@@ -101,3 +101,9 @@ int xinc=1;
 int yinc=1;
 long stamp=0;
 long displayTime=0;
+
+void reconnectWiFi();
+void wifiAPSetup();
+void displayIPs(int x, int y, boolean fSerialPrint);
+void wifiSTASetup();
+void *getLocalHotspot();
