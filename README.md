@@ -1,5 +1,5 @@
 # AsyncLWCMonitor
- London Wateer Co-op monitor for Heltec ESP32 LoRa V2
+ London Water Co-op monitor for Heltec ESP32 LoRa V2
  
  ![The Monitor](/assets/PXL_20220309_233631942.jpg)
 
