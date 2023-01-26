@@ -28,7 +28,7 @@ Since very few of the microcontroller pins are used and those are on the corners
 ### Features
 
 - Setup
-  - Read configuration from non-volitile storage
+  - Read configuration from non-volatile storage
   - Create WiFi Access Point
   - Join a local Access Point
     - Scan available access points
@@ -51,17 +51,36 @@ Since very few of the microcontroller pins are used and those are on the corners
 
 ### Remote Access
 
-The Monitor is designed to work within a local WiFi network or without any network at all. While one could make a hole in a firewall to allow access to an instance of the Monitor in order to access its web pages, another solution which involves a remote web server that an instance of the Monitor can access. On that server, two PHP scripts are installed to persist and retrieve metrics. If the Monitor is configured with a Remote Server address, whenever the metrics change it will send an HTTP GET request with the metrics to be persisted to the server as follows:
+The Monitor is designed to work within a local WiFi network or without any network at all. While one could punch a hole in a firewall to allow access to an instance of the Monitor in order to access its web pages, another solution has been provided which involves a remote web server that is accessible by an instance of the Monitor. On that server, two PHP scripts are installed to persist and retrieve metrics. If the Monitor is configured with a Remote Server address, whenever the metrics change it will send an HTTP GET request with the metrics to be persisted to the server as follows:
 
 ```
 GET /storeit.php?<data to be persisted> HTTP/1.0
 ```
 
-The data is a comma separated list of metric values. For details about the format, please refer to the code as changes would likely not appear here.
+The data is a comma separated list of metric values. For details about the format, please refer to the code as changes would likely not appear here as they are inevitably made.
 
 With that in place anyone can load `lwcmon.html` and it will display the metrics just as if they were accessed through the Monitor's root page. Note that the server address in `lwcmon.html` must match that configured into the Monitor instance that is persisting the data. Apart from having the correct server address, the server must have `getit.php` loaded for the whole thing to work.
 
-Note: there should only ever be one instance of the Monitor persisting data to any given server. Also, the instance of the Monitor that is persisting data can be a naked Heltec ESP32 LoRa V2 (i.e., it doesn't need the LED or buzzer).
+Note: there should only ever be one instance of the Monitor persisting data to any given server. Also, the instance of the Monitor that is persisting data can be a naked Heltec ESP32 LoRa V2 (i.e., it doesn't need the LED or buzzer). Here's what `lwcmon.html` looks like when the WTP is not running:
 
 ![lwcmon.html](/assets/lwcmon-html.jpg)
 
+And here's what it looks like when the WTP is running (note the negative GPH metric):
+
+![lwcmon.html when WTP is running](/assets/lwcmon-html-WTP-running.jpg)
+
+So, `lwcmon.html` creates a message listener function (i.e., `window.addEventListener("message", onMessage);`) and contains an `iframe` that loads `getit.php` once per minute. `getit.php` loads the data that was persisted by `storeit.php` and renders something like the following which ends up in the `iframe`:
+
+```
+<html>
+<head>
+</head>
+<body>
+<script>
+  window.parent.postMessage(<data persisted by storeit.php>, "*");
+</script>
+</body>
+</html>
+```
+
+The message listener function renders the data as shown above.
