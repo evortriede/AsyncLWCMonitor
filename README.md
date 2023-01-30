@@ -61,7 +61,7 @@ Since very few of the microcontroller pins are used and those are on the corners
 
 #### Monitor Configuration Page
 
-![Monitor Configuration Page](/assets/Monitor-config)
+![Monitor Configuration Page](/assets/Monitor-config.png)
 
 - SSID To Join and Password... name a local WiFi AP that the Monitor will try to join. It will still work if there is none given or if it fails to join the one that is given.
 - SSID for Captive Net and Password... name the SSID for the WiFi AP that the Monitor will create. If one connects to that AP, the Monitor pages will be available on IP address 192.168.4.4. This is useful if there is no local AP or to configure the local AP the first time.
