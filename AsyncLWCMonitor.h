@@ -20,10 +20,10 @@ typedef struct
   char captive_pass[25];
   char dnsName[25];
   int sf;
-  bool storeToCloud;
+  char remoteServer[64];
 } config_data_t;
 
-config_data_t configData={"","","ChangeMe","admin","LWCMonitor",9,false};
+config_data_t configData={"","","ChangeMe","admin","LWCMonitor",9,"\0"};
 
 typedef struct 
 {
@@ -101,6 +101,11 @@ int xinc=1;
 int yinc=1;
 long stamp=0;
 long displayTime=0;
+bool shouldReboot=false;
+bool letsReboot=false;
+long lastVolume=0;
+long lastTurbidity=0;
+long lastChlorine=0;
 
 void reconnectWiFi();
 void wifiAPSetup();

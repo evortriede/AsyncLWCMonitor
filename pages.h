@@ -38,6 +38,8 @@ static const char serverIndex[] PROGMEM =R"(
       success:function(d, s) 
       {
         console.log('success!')
+        $('#prg').html('success');
+        location.replace('/');
       },
       error: function (a, b, c) 
       {
@@ -96,6 +98,7 @@ static const char statusPage[] PROGMEM =R"(
         document.getElementById('gph').value=rg[2];
         document.getElementById('gpd').value=rg[3];
         document.getElementById('duty').value=rg[4];
+        document.getElementById('pump').value=rg[11];
 
         rgg=rg[1].split(' ');
         let gal=rgg[0];
@@ -148,6 +151,7 @@ static const char statusPage[] PROGMEM =R"(
     
     <div style='font-size:250%'>
       <input id='loramsg' value='0' size='100' width='100%' style='border:none'></input> <br> 
+      Pump Setting <input id="pump" value=0, style='font-size:40px; border:none'></input><br>
       Tank Level <input id='gallons' value='12345' style='font-size:40px; border:none'></input><br>
       Usage last hour <input id='gph' value='0' style='font-size:40px; border:none'></input> <br>
       Usage last 24 hours <input id='gpd' value='0' style='font-size:40px; border:none'></input> <br>
@@ -172,9 +176,11 @@ static const char rootFmt[] PROGMEM =R"(
       Elappsed minutes: %ld <br>
       Attached SSID: %s <br>
       IP Addr: %s <br>
+      Last volume: %ld Last turbidity: %ld Last chlorine: %ld <br>
       <a href='/config'>Configure</a> <br>
       <a href='/ota'>Firmware Upload</a> <br>
-      <a href='/'>Back</a>
+      <a href='/'>Back</a><br>
+      <a href='/reboot'>Boot</a>
     </div>
     <canvas id="myCanvas" width="300" height="150" style="border:1px solid #d3d3d3;">
       Your browser does not support the HTML5 canvas tag.
@@ -202,13 +208,14 @@ static const char configFmt[] PROGMEM =R"(
   <body>
     <div style='font-size:250%%'>
       <form action="/set" method="GET">
-        SSID to join<br> <input type="text" name="ssid" style="font-size:40px" value="%s"></input><br><br>
-        Password for SSID to join<br> <input type="text" name="pass" style="font-size:40px" value="%s"></input><br><br>
-        SSID for Captive Net<br> <input type="text" name="captive_ssid" style="font-size:40px" value="%s"></input><br><br>
-        Password for Captive Net SSID<br> <input type="text" name="captive_pass" style="font-size:40px" value="%s"></input><br><br>
-        Spreading Factor (7-12)<br> <input type="text" name="sf" style="font-size:40px" value="%i"></input><br><br>
-        DNS Name<br> <input type="text" name="dns_name" style="font-size:40px" value="%s"></input><br><br>
-        <input type="submit"></input>
+        SSID to join <input type="text" name="ssid" style="font-size:40px" value="%s"></input><br>
+        Password for SSID to join <input type="text" name="pass" style="font-size:40px" value="%s"></input><br>
+        SSID for Captive Net <input type="text" name="captive_ssid" style="font-size:40px" value="%s"></input><br>
+        Password for Captive Net SSID <input type="text" name="captive_pass" style="font-size:40px" value="%s"></input><br>
+        Spreading Factor (7-12) <input type="text" name="sf" style="font-size:40px" value="%i"></input><br>
+        DNS Name <input type="text" name="dns_name" style="font-size:40px" value="%s"></input><br>
+        Remote Server <input type="text" name="rmtserver" style="font-size:40px" value="%s"></input><br>
+        <input type="submit" style="font-size:40px"></input>
       </form>
     </div>
   </body>

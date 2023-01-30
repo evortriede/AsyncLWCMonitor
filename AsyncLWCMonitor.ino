@@ -2,33 +2,28 @@
 
 #include "pages.h"
 
-static const char statusFmt[] = "%s,%i gal,%i,%i,%2.2f%%,%s,%i,%s,%s,%i,%s";
-
-void handleStatus(AsyncWebServerRequest *request)
-{
-  request->send(200, "text/html", statusPage);
-}
+static const char statusFmt[] = "%s,%i gal,%i,%i,%2.2f%%,%s,%i,%s,%s,%i,%s,%i";
 
 void writeToCloud(char *dataToStore)
 {
   if (!wifiStaConnected) return;
-  if (!configData.storeToCloud) return;
+  if (configData.remoteServer[0]=='\0') return;
   
-  Serial.println("\nStarting connection to server...");
-  if (!httpClient.connect("menuchabibleschool.org", 80))
+  Serial.printf("\nStarting connection to %s\n",configData.remoteServer);
+  if (!httpClient.connect(configData.remoteServer, 80))
   {
-    Serial.println("Connection to menucha failed!");
+    Serial.printf("Connection to %s!\n",configData.remoteServer);
   }
   else
   {
-    Serial.println("Connected to menucha!");
+    Serial.printf("Connected to %s!",configData.remoteServer);
     // Make a HTTP request:
     char request[128];
     sprintf(request,"GET /storeit.php?%s HTTP/1.0",
             dataToStore);
     Serial.println(request);
     httpClient.println(request);
-    httpClient.println("Host: www.menuchabibleschool.org");
+    httpClient.printf("Host: %s\r\n",configData.remoteServer);
     httpClient.println("Connection: close");
     httpClient.println();
 
@@ -75,7 +70,7 @@ void handleAsyncStatusUpdate()
   char sppm[16];
   sprintf(sppm,"%0.2f ppm",fppm);
   const char* chlStyle=(fppm<0.2)?"#FFFF00":(fppm>1.0)?"#FF0000":"#00FF00";
-  sprintf(statusBuffer,statusFmt,dataTranslated,gallons,gph,gpd,duty,turbStyle,turb,sturb,chlStyle,chlFill,sppm);
+  sprintf(statusBuffer,statusFmt,dataTranslated,gallons,gph,gpd,duty,turbStyle,turb,sturb,chlStyle,chlFill,sppm,pump);
   ws.textAll(String(statusBuffer));
   sprintf(statusBuffer,"%i,%i,%i,%0.2f,%0.3f,%0.2f,%i\0",gallons,gph,gpd,duty,fturb,fppm,pump);
   writeToCloud(statusBuffer);
@@ -92,6 +87,7 @@ void handleConfig(AsyncWebServerRequest *request)
          ,configData.captive_pass
          ,configData.sf
          ,configData.dnsName
+         ,configData.remoteServer
          );
   request->send(200, "text/html", httpMsg);
 }
@@ -102,6 +98,12 @@ void reboot()
   ESP.restart();
 }
 
+void handleStatus(AsyncWebServerRequest *request)
+{
+  request->send(200, "text/html", statusPage);
+  letsReboot=shouldReboot;
+}
+
 void handleSet(AsyncWebServerRequest *request)
 {
   strcpy(configData.ssid,request->arg("ssid").c_str());
@@ -110,6 +112,7 @@ void handleSet(AsyncWebServerRequest *request)
   strcpy(configData.captive_pass, request->arg("captive_pass").c_str());
   configData.sf=atoi(request->arg("sf").c_str());
   strcpy(configData.dnsName,request->arg("dns_name").c_str());
+  strcpy(configData.remoteServer,request->arg("rmtserver").c_str());
 
   nvs_handle handle;
   esp_err_t res = nvs_open("lwc_data", NVS_READWRITE, &handle);
@@ -119,9 +122,8 @@ void handleSet(AsyncWebServerRequest *request)
   nvs_commit(handle);
   nvs_close(handle);
   
-  handleConfig(request);
-  delay(1000);
-  reboot();
+  request->send(200, "text/html", 
+    "<html><head></head><body onload=\"location.replace('/config');\"></body></html>\n");
 }
 
 void eepromSetup()
@@ -135,13 +137,14 @@ void eepromSetup()
   Serial.printf("nvs_get_blob %i; size %i\n",res,sz);
   nvs_close(handle);
   
-  Serial.printf("ssid=%s\npass=%s\ncaptive_ssid=%s\ncaptive_pass=%s\nSF=%i\ndnsName=%s\n"
+  Serial.printf("ssid=%s\npass=%s\ncaptive_ssid=%s\ncaptive_pass=%s\nSF=%i\ndnsName=%s\nermoteServer%s\n"
                ,configData.ssid
                ,configData.pass
                ,configData.captive_ssid
                ,configData.captive_pass
                ,configData.sf
                ,configData.dnsName
+               ,configData.remoteServer
                );
 }
 
@@ -154,6 +157,11 @@ void webServerSetup()
   server.on("/",handleStatus);
   server.on("/config",handleConfig);
   server.on("/set",handleSet);
+  server.on("/reboot", HTTP_GET, [](AsyncWebServerRequest *request) {
+      request->send(200, "text/html", 
+          "<html><head></head><body onload=\"location.replace('/');\">Rebooting</body></html>\n");
+      shouldReboot=true;
+  });
   server.on("/ota", HTTP_GET, [](AsyncWebServerRequest *request) {
     //request->sendHeader("Connection", "close");
     request->send(200, "text/html", serverIndex);
@@ -161,9 +169,8 @@ void webServerSetup()
   /*handling uploading firmware file */
   server.on("/update", HTTP_POST, [](AsyncWebServerRequest *request) {
     //request->sendHeader("Connection", "close");
-    request->send(200, "text/plain", "<html><body onload=\"location.replace('/');\"></html>");
-    delay(100);
-    ESP.restart();
+    request->send(200, "text/html", "<html><head></head><body onload=\"location.replace('/');\">Rebooting...</body></html>\n");
+    shouldReboot=true;
   }, 
   [](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) 
   {
@@ -296,6 +303,7 @@ void gotData(byte *data,int len)
   if (*data=='r') // raw tank level
   {
     lastRealData=millis();
+    lastVolume=millis();
     if (*ps > 3310) return;
     total+=*ps;
     count++;
@@ -320,14 +328,17 @@ void gotData(byte *data,int len)
   }
   else if (*data=='T') // turbidity
   {
+    lastRealData=lastTurbidity=millis();
     turbidity=*ps;
   }
   else if (*data=='C') // chlorine
   {
+    lastRealData=lastChlorine=millis();
     chlorine=*ps;
   }
   else if (*data=='P') // pump
   {
+    lastRealData=millis();
     pump=*ps;
   }
   else if (*data=='c') // current is flowing
@@ -381,6 +392,7 @@ void gotData(byte *data,int len)
          , minutes
          , WiFi.SSID().c_str()
          , rgIPTxtSTN
+         , lastVolume, lastTurbidity, lastChlorine
          ,dataBuff
          );
   handleAsyncStatusUpdate();
@@ -418,8 +430,8 @@ void duckDNSSetup()
     Serial.println("Connected to server!");
     // Make a HTTP request:
     char request[128];
-    sprintf(request,"GET https://www.duckdns.org/update/%s/37fda52f-a4a9-451e-8621-253e4ddecb26/%s HTTP/1.0",
-            configData.dnsName,rgIPTxtSTN);
+    sprintf(request,"GET https://www.duckdns.org/update/%s/%s/%s HTTP/1.0",
+            configData.dnsName,duckDNSToken,rgIPTxtSTN);
     Serial.println(request);
     client.println(request);
     client.println("Host: www.duckdns.org");
@@ -522,7 +534,7 @@ void setup()
 
   wifiAPSetup();
   duckDNSSetup();
-  sprintf(rootIndex,rootFmt,"No Data", 0, 0, 0, 0, 0, 0, 0, 0l, WiFi.SSID().c_str(), rgIPTxtSTN,"0");
+  sprintf(rootIndex,rootFmt,"No Data", 0, 0, 0, 0, 0, 0, 0, 0l, WiFi.SSID().c_str(), rgIPTxtSTN,0L,0L,0L,"0");
 
   initWebSocket();
   webServerSetup();
@@ -601,6 +613,12 @@ bool debouncePin(int pin, int &pinState, long &stamp, int &pinValue)
 
 void loop()
 {
+  if (letsReboot) 
+  {
+    delay(1000);
+    reboot();
+  }
+  
   onLoRaReceive(LoRa.parsePacket());
   ws.cleanupClients();
   

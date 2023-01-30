@@ -49,6 +49,26 @@ Since very few of the microcontroller pins are used and those are on the corners
   - If a minute has passed w/o a LoRa message, set LED to yellow.
   - Handle any HTTP requests
 
+### Screenshots
+
+#### Monitor Main Page
+
+![Monitor Main Page](/assets/Monitor-root.png)
+
+#### Monitor Details Page
+
+![Monitor Details Page](/assets/Monitor-details.png)
+
+#### Monitor Configuration Page
+
+![Monitor Configuration Page](/assets/Monitor-config)
+
+- SSID To Join and Password... name a local WiFi AP that the Monitor will try to join. It will still work if there is none given or if it fails to join the one that is given.
+- SSID for Captive Net and Password... name the SSID for the WiFi AP that the Monitor will create. If one connects to that AP, the Monitor pages will be available on IP address 192.168.4.4. This is useful if there is no local AP or to configure the local AP the first time.
+- Spreading Factor (7-12) defines the LoRa spreading factor and must match the configured spreading factor of the Current Monitor and Current Recorder.
+- DNS Name if given is the DNS name that will be given to DuckDNS.org. If given and it matches a configured DuckDNS DNS name, the local IP address will be given to DuckDNS so that <name>.duckdns.org can be used to access the Monitor pages.
+- Remote Server names the remote server that will be used for remote access (see below).
+
 ### Remote Access
 
 The Monitor is designed to work within a local WiFi network or without any network at all. While one could punch a hole in a firewall to allow access to an instance of the Monitor in order to access its web pages, another solution has been provided which involves a remote web server that is accessible by an instance of the Monitor. On that server, two PHP scripts are installed to persist and retrieve metrics. If the Monitor is configured with a Remote Server address, whenever the metrics change it will send an HTTP GET request with the metrics to be persisted to the server as follows:
