@@ -1,6 +1,7 @@
 <html>
  <head>
    <script>
+    var currentVoice;
     function loadIFrame(url)
     {
       document.getElementById("theFrame").src=url;
@@ -21,6 +22,17 @@
       ctx.font="30px Arial";
       centerText(ctx,name,30);
       centerText(ctx,txt, 500-(metric/2));
+    }
+    var toSay="Nothing to say";
+    function sayIt()
+    {
+      if (currentVoice===undefined)
+      {
+        initVoice();
+      }
+      let utterance = new SpeechSynthesisUtterance(toSay);
+      utterance.voice=currentVoice;
+      speechSynthesis.speak(utterance);
     }
     function onMessage(event) 
     {
@@ -50,10 +62,24 @@
         drawMeter("Turbidity",(rg[4]<0.3)?"#00FF00":(rg[4]>1.0)?"#FF0000":"#FFFF00",rg[4]*1000,rg[4]+"ntu");
         drawMeter("Chlorine",(rg[5]<0.3)?"#FFFF00":(rg[5]>1.0)?"#FF0000":"#00FF00",rg[5]*231,rg[5]+"ppm");
       }
+      toSay="There are "+gal+" gallons in the tanks which is "+pct.toFixed(0)+" percent.";
+    }
+    function initVoice()
+    {
+      const voices = speechSynthesis.getVoices();
+//      alert(voices.length);
+      for (let i=0; i < voices.length; i++)
+      {
+        if (voices[i].default)
+        {
+          currentVoice=voices[i];
+          break;
+        }
+      }
     }
 	</script>
  </head>
- <body>
+ <body onload="initVoice();">
     <canvas id="TankLevel" width="200" height="500"
     style="border:1px solid #c3c3c3;">
     Your browser does not support the canvas element.
@@ -73,6 +99,7 @@
       Usage last hour <input id='gph' value='0' style='font-size:40px; border:none'></input> <br>
       Usage last 24 hours <input id='gpd' value='0' style='font-size:40px; border:none'></input> <br>
       Duty cycle <input id='duty' value='0' style='font-size:40px; border:none'></input><br>
+      <button onclick="sayIt();" style='font-size:40px;'>Speak It</button>
     </div>
    <script>
      setInterval(loadIFrame, 60000, 'http://menuchabibleschool.org/getit.php');

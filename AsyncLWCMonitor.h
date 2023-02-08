@@ -23,7 +23,7 @@ typedef struct
   char remoteServer[64];
 } config_data_t;
 
-config_data_t configData={"","","ChangeMe","admin","LWCMonitor",9,"\0"};
+config_data_t configData={"TP-Link_32E6","","ChangeMe","admin","LWCMonitor",9,"\0"};
 
 typedef struct 
 {
@@ -52,6 +52,7 @@ int gph=0;
 int avg=0;
 int gallons=0;
 char statusBuffer[512];
+char wsStatusBuffer[512];
 char httpMsg[4096];
 
 long timeToConnect=0;

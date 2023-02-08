@@ -4,6 +4,8 @@
 
 static const char statusFmt[] = "%s,%i gal,%i,%i,%2.2f%%,%s,%i,%s,%s,%i,%s,%i";
 
+char request[128]; // we don't want this to be on the stack
+
 void writeToCloud(char *dataToStore)
 {
   if (!wifiStaConnected) return;
@@ -18,7 +20,6 @@ void writeToCloud(char *dataToStore)
   {
     Serial.printf("Connected to %s!",configData.remoteServer);
     // Make a HTTP request:
-    char request[128];
     sprintf(request,"GET /storeit.php?%s HTTP/1.0",
             dataToStore);
     Serial.println(request);
@@ -70,8 +71,8 @@ void handleAsyncStatusUpdate()
   char sppm[16];
   sprintf(sppm,"%0.2f ppm",fppm);
   const char* chlStyle=(fppm<0.2)?"#FFFF00":(fppm>1.0)?"#FF0000":"#00FF00";
-  sprintf(statusBuffer,statusFmt,dataTranslated,gallons,gph,gpd,duty,turbStyle,turb,sturb,chlStyle,chlFill,sppm,pump);
-  ws.textAll(String(statusBuffer));
+  sprintf(wsStatusBuffer,statusFmt,dataTranslated,gallons,gph,gpd,duty,turbStyle,turb,sturb,chlStyle,chlFill,sppm,pump);
+  ws.textAll(String(wsStatusBuffer));
   sprintf(statusBuffer,"%i,%i,%i,%0.2f,%0.3f,%0.2f,%i\0",gallons,gph,gpd,duty,fturb,fppm,pump);
   writeToCloud(statusBuffer);
 }
@@ -466,7 +467,7 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
   switch (type) {
     case WS_EVT_CONNECT:
       Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
-      handleAsyncStatusUpdate();
+      ws.textAll(String(wsStatusBuffer));
       break;
     case WS_EVT_DISCONNECT:
       Serial.printf("WebSocket client #%u disconnected\n", client->id());

@@ -12,11 +12,34 @@ void *getLocalHotspot()
   {
     Serial.print(n);
     Serial.println(" networks found");
-    for (int i = 0; i < n; ++i) 
+    int i=0;
+    int j=0;
+    int nHotspots=sizeof(savedHotspots)/sizeof(savedHotspots[0]);
+
+    // first look for the configured ssid in the saved hotspots
+    for (i=0; i<nHotspots; i++)
+    {
+      if (0==strcmp(configData.ssid,savedHotspots[i].ssid)) // found in saved hotspots
+      {
+        Serial.printf("Configured hotspot %s is saved hotspot %i\n",configData.ssid,i);
+        for (j=0;j<n;j++) // look for it in network
+        {
+          const char* ssid=WiFi.SSID(j).c_str();
+          Serial.printf("looking at %s\n",ssid);
+          if (0==strcmp(configData.ssid,ssid))
+          {
+            Serial.printf("found configured hotspot %s in saved hotspots and in scan results\n",configData.ssid);
+            return &savedHotspots[i];
+          }
+        }
+        break; // in saved hotspots but not in network
+      }
+    }
+    for (i = 0; i < n; ++i) 
     {
       String id = WiFi.SSID(i);
       Serial.printf("looking for %s\n",id.c_str());
-      for (int j=0;j<sizeof(savedHotspots)/sizeof(savedHotspots[0]);j++)
+      for (int j=0;j<nHotspots;j++)
       {
         Serial.printf("looking at %s\n",savedHotspots[j].ssid);
         if (strcmp(savedHotspots[j].ssid,id.c_str())==0)
