@@ -420,7 +420,7 @@ void duckDNSSetup()
 {
   if (!wifiStaConnected) return;
   if (strlen(configData.dnsName)==0) return;
-  
+
   Serial.println("\nStarting connection to server...");
   if (!client.connect("www.duckdns.org", 443))
   {
@@ -535,6 +535,10 @@ void setup()
 
   wifiAPSetup();
   duckDNSSetup();
+
+  MDNS.begin(configData.captive_ssid);
+  MDNS.addService("http", "tcp", 80);
+
   sprintf(rootIndex,rootFmt,"No Data", 0, 0, 0, 0, 0, 0, 0, 0l, WiFi.SSID().c_str(), rgIPTxtSTN,0L,0L,0L,"0");
 
   initWebSocket();

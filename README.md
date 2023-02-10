@@ -64,7 +64,7 @@ Since very few of the microcontroller pins are used and those are on the corners
 ![Monitor Configuration Page](/assets/Monitor-config.png)
 
 - SSID To Join and Password... name a local WiFi AP that the Monitor will try to join. It will still work if there is none given or if it fails to join the one that is given.
-- SSID for Captive Net and Password... name the SSID for the WiFi AP that the Monitor will create. If one connects to that AP, the Monitor pages will be available on IP address 192.168.4.4. This is useful if there is no local AP or to configure the local AP the first time.
+- SSID for Captive Net and Password... name the SSID for the WiFi AP that the Monitor will create. If one connects to that AP, the Monitor pages will be available on IP address 192.168.4.4. This is useful if there is no local AP or to configure the local AP the first time. Also, the SSID name is used as an mDNS name so <name>.local can be used to access the Monitor pages if mDNS is available. (mDNS is widely available on Windows and iOS but is absent from Android.)
 - Spreading Factor (7-12) defines the LoRa spreading factor and must match the configured spreading factor of the Current Monitor and Current Recorder.
 - DNS Name if given is the DNS name that will be given to DuckDNS.org. If given and it matches a configured DuckDNS DNS name, the local IP address will be given to DuckDNS so that <name>.duckdns.org can be used to access the Monitor pages.
 - Remote Server names the remote server that will be used for remote access (see below).

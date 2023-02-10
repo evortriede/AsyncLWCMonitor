@@ -11,6 +11,7 @@
 #include <Update.h>
 #include <esp_log.h>
 #include <nvs.h>
+#include <ESPmDNS.h>
 
 typedef struct
 {
