@@ -13,6 +13,9 @@
 #include <nvs.h>
 #include <ESPmDNS.h>
 
+#define CONVERSION_FACTOR_MULTIPLIER 698
+#define CONVERSION_FACTOR_DENOMINATOR 100
+
 typedef struct
 {
   char ssid[25];

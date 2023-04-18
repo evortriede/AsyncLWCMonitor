@@ -9,6 +9,7 @@ static const char serverIndex[] PROGMEM =R"(
         <input type='submit' value='Update'>
 </form>
 <div id='prg'>progress: 0%</div>
+<br>      <a href='/' style="font-size:40px">Home</a><br>
 <script>
   $('form').submit(function(e)
   {
@@ -88,7 +89,7 @@ static const char statusPage[] PROGMEM =R"(
         ctx.fillRect(25, 500-metric, 150, metric);
         ctx.font="30px Arial";
         centerText(ctx,name,30);
-        centerText(ctx,txt, 500-(metric/2));
+        centerText(ctx,txt, Math.max(60,500-(metric/2)));
       }
       function onMessage(event) 
       {
@@ -102,8 +103,8 @@ static const char statusPage[] PROGMEM =R"(
 
         rgg=rg[1].split(' ');
         let gal=rgg[0];
-        let x=gal/46;
-        let pct = (gal/23784)*100;
+        let x=gal/47; // 23688 / 500 ~= 47.4
+        let pct = (gal/23688)*100;
         var style="#00FF00";
         if (pct < 33)
         {
@@ -193,7 +194,7 @@ static const char rootFmt[] PROGMEM =R"(
       ctx.beginPath();
       for (let i=0;i<data.length;i++)
       {
-        ctx.lineTo(i*((window.innerWidth-20)/(data.length-1)),150-(data[i]/21.3));
+        ctx.lineTo(i*((window.innerWidth-20)/(data.length-1)),150-(data[i]/22.6));
       }
       ctx.stroke();
     </script>
@@ -213,10 +214,13 @@ static const char configFmt[] PROGMEM =R"(
         SSID for Captive Net <input type="text" name="captive_ssid" style="font-size:40px" value="%s"></input><br>
         Password for Captive Net SSID <input type="text" name="captive_pass" style="font-size:40px" value="%s"></input><br>
         Spreading Factor (7-12) <input type="text" name="sf" style="font-size:40px" value="%i"></input><br>
-        DNS Name <input type="text" name="dns_name" style="font-size:40px" value="%s"></input><br>
+        Duck DNS Name <input type="text" name="dns_name" style="font-size:40px" value="%s"></input><br>
         Remote Server <input type="text" name="rmtserver" style="font-size:40px" value="%s"></input><br>
         <input type="submit" style="font-size:40px"></input>
       </form>
+      <br>
+      <a href='/details' style="font-size:40px">Back</a><br>
+      <a href='/' style="font-size:40px">Home</a><br>
     </div>
   </body>
 </html>

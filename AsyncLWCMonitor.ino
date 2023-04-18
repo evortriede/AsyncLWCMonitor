@@ -65,9 +65,9 @@ void handleAsyncStatusUpdate()
   sprintf(sturb,"%0.3f ntu",fturb);
   const char* turbStyle=(turbidity<300)?"#00FF00":(turbidity<1000)?"#FFFF00":"#FF0000";
 
-  int chlFill=chlorine/7;
   float fppm=chlorine;
-  fppm/=1623.0;
+  fppm/=2632.8;
+  int chlFill=fppm*125; // fppm should be at most 4, so 4*125=500 which is the top of the meter
   char sppm[16];
   sprintf(sppm,"%0.2f ppm",fppm);
   const char* chlStyle=(fppm<0.2)?"#FFFF00":(fppm>1.0)?"#FF0000":"#00FF00";
@@ -278,6 +278,7 @@ void logger(const char *msg)
 void translate(byte *data,int len)
 {
   unsigned *pi=(unsigned*)(&data[1]);
+  unsigned short *ps=(unsigned short*)(pi);
   if (data[0]=='c') // current is flowing
   {
     sprintf(dataTranslated,"current is flowing %i %i",pi[0],pi[1]);
@@ -286,11 +287,19 @@ void translate(byte *data,int len)
     sprintf(dataTranslated,"no current flowing %i %i",pi[0],pi[1]);
   } else if (data[0]=='r') //raw tank reading 
   {
-    unsigned short *ps=(unsigned short*)(pi);
     sprintf(dataTranslated,"raw tank reading %i",*ps);
   } else if (data[0]=='W') // WATER USAGE VERY HIGH
   {
     sprintf(dataTranslated,"WATER USAGE VERY HIGH");
+  } else if (data[0]=='T')
+  {
+    sprintf(dataTranslated,"raw turbidity reading %i",*ps);
+  } else if (data[0]=='C')
+  {
+    sprintf(dataTranslated,"raw chlorine reading %i",*ps);
+  } else if (data[0]=='P')
+  {
+    sprintf(dataTranslated,"pump setting %i",*ps);
   }
 }
 
@@ -305,11 +314,11 @@ void gotData(byte *data,int len)
   {
     lastRealData=millis();
     lastVolume=millis();
-    if (*ps > 3310) return;
+    if (*ps > 3395) return;
     total+=*ps;
     count++;
-    avg=((total / count) * 719) / 100;
-    gallons=(*ps *719) / 100;
+    avg=((total / count) * CONVERSION_FACTOR_MULTIPLIER) / CONVERSION_FACTOR_DENOMINATOR;
+    gallons=(*ps * CONVERSION_FACTOR_MULTIPLIER) / CONVERSION_FACTOR_DENOMINATOR;
     
     while(ndex <= minutes)
     {
@@ -317,9 +326,9 @@ void gotData(byte *data,int len)
       rgDay[ndex % 1440]=*ps;
       ndex++;
     }
-    gpd=(719 * (rgDay[(ndex<1440)?0:ndex%1440]-*ps)) / 100;
-    int tgph=(719 * (rgHour[(ndex<60)?0:ndex%60]-*ps)) / 100;
-    if (gph<0 && tgph>0)
+    gpd=(CONVERSION_FACTOR_MULTIPLIER * (rgDay[(ndex<1440)?0:ndex%1440]-*ps)) / CONVERSION_FACTOR_DENOMINATOR;
+    int tgph=(CONVERSION_FACTOR_MULTIPLIER * (rgHour[(ndex<60)?0:ndex%60]-*ps)) / CONVERSION_FACTOR_DENOMINATOR;
+    if (gph<=0 && tgph>0)
     {
       turbidity=0;
       chlorine=0;
