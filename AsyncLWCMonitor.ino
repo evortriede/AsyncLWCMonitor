@@ -66,7 +66,7 @@ void handleAsyncStatusUpdate()
   const char* turbStyle=(turbidity<300)?"#00FF00":(turbidity<1000)?"#FFFF00":"#FF0000";
 
   float fppm=chlorine;
-  fppm/=2632.8;
+  fppm/=configData.chlConversionFactor;
   int chlFill=fppm*125; // fppm should be at most 4, so 4*125=500 which is the top of the meter
   char sppm[16];
   sprintf(sppm,"%0.2f ppm",fppm);
@@ -89,6 +89,7 @@ void handleConfig(AsyncWebServerRequest *request)
          ,configData.sf
          ,configData.dnsName
          ,configData.remoteServer
+         ,configData.chlConversionFactor
          );
   request->send(200, "text/html", httpMsg);
 }
@@ -114,6 +115,7 @@ void handleSet(AsyncWebServerRequest *request)
   configData.sf=atoi(request->arg("sf").c_str());
   strcpy(configData.dnsName,request->arg("dns_name").c_str());
   strcpy(configData.remoteServer,request->arg("rmtserver").c_str());
+  configData.chlConversionFactor=atof(request->arg("factor").c_str());
 
   nvs_handle handle;
   esp_err_t res = nvs_open("lwc_data", NVS_READWRITE, &handle);
@@ -431,6 +433,9 @@ void duckDNSSetup()
   if (strlen(configData.dnsName)==0) return;
 
   Serial.println("\nStarting connection to server...");
+
+  client.setInsecure();
+
   if (!client.connect("www.duckdns.org", 443))
   {
     Serial.println("Connection failed!");

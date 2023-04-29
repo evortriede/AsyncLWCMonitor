@@ -216,6 +216,7 @@ static const char configFmt[] PROGMEM =R"(
         Spreading Factor (7-12) <input type="text" name="sf" style="font-size:40px" value="%i"></input><br>
         Duck DNS Name <input type="text" name="dns_name" style="font-size:40px" value="%s"></input><br>
         Remote Server <input type="text" name="rmtserver" style="font-size:40px" value="%s"></input><br>
+        Conversion factor <input type="number" step="0.1" name="factor" style="font-size:30px" value="%0.2f"></input><br>
         <input type="submit" style="font-size:40px"></input>
       </form>
       <br>

@@ -25,9 +25,10 @@ typedef struct
   char dnsName[25];
   int sf;
   char remoteServer[64];
+  float chlConversionFactor;
 } config_data_t;
 
-config_data_t configData={"TP-Link_32E6","","ChangeMe","admin","LWCMonitor",9,"\0"};
+config_data_t configData={"TP-Link_32E6","","ChangeMe","admin","LWCMonitor",9,"\0",2180.0};
 
 typedef struct 
 {
