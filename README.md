@@ -23,6 +23,8 @@ Since very few of the microcontroller pins are used and those are on the corners
 
 ![Monitor Clearance](/assets/PXL_20220310_004426639.jpg)
 
+A bill of materials, the TiniCAD schmatic and VeeCAD stripboard layout are in the /hardware directory of this repository.
+
 ## Firmware
 
 ### Features
@@ -48,7 +50,7 @@ Since very few of the microcontroller pins are used and those are on the corners
   - If local AP is connected and Remote Server address is configured, send HTTP request with metrics
   - If a minute has passed w/o a LoRa message, set LED to yellow.
   - Handle any HTTP requests
-
+  
 ### Screenshots
 
 #### Monitor Main Page
@@ -104,3 +106,10 @@ So, `lwcmon.html` creates a message listener function (i.e., `window.addEventLis
 ```
 
 The message listener function renders the data as shown above.
+
+### Building the Firmware
+
+There are instructions for setting up the Arduino IDE in the london-water-co-op repository on GitHub. Once the IDE is set up, the firmware can be built by setting the board to the WiFi LoRa 32(V2) from under Heltec ESP32 Arduino.
+
+![WiFi LoRa 32(V2)](/assets/WiFiLora32V2.png)
+

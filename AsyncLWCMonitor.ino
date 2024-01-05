@@ -57,7 +57,7 @@ void handleAsyncStatusUpdate()
   if (offDurration != 0)
   {
     duty=onDurration * 100;
-    duty /= offDurration;
+    duty /= onDurration+offDurration;
   }
   int turb=turbidity;
   float fturb=0.001*turbidity;
@@ -521,7 +521,7 @@ void setup()
   pinMode(BUZZER_PIN,OUTPUT);
   digitalWrite(BUZZER_PIN,HIGH);
   
-  esp_log_set_vprintf(&myprintf);
+  //esp_log_set_vprintf(&myprintf);
   sprintf(msg,"%s","no data");
   
   Heltec.begin(true /*DisplayEnable Enable*/, 
