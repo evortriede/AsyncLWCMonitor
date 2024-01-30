@@ -1,10 +1,14 @@
 <html>
  <head>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" /> 
+  <meta http-equiv="Pragma" content="no-cache" /> 
+  <meta http-equiv="Expires" content="0" />
+
    <script>
     var currentVoice;
     function loadIFrame(url)
     {
-      document.getElementById("theFrame").src=url;
+      document.getElementById("theFrame").src=url+"?"+Math.random();
     }
     function centerText(ctx,txt,vpos)
     {
@@ -21,7 +25,7 @@
       ctx.fillRect(25, 500-metric, 150, metric);
       ctx.font="30px Arial";
       centerText(ctx,name,30);
-      centerText(ctx,txt, 500-(metric/2));
+      centerText(ctx,txt, Math.max(250,500-(metric/2)));
     }
     var toSay="Nothing to say";
     function sayIt()
@@ -102,9 +106,11 @@
       <button onclick="sayIt();" style='font-size:40px;'>Speak It</button>
     </div>
    <script>
-     setInterval(loadIFrame, 60000, 'http://menuchabibleschool.org/getit.php');
+     url=window.location.protocol+"//"+window.location.hostname+"/getit.php";
+     setInterval(loadIFrame, 60000, url);
      window.addEventListener("message", onMessage);
+     loadIFrame(url);
    </script>
-   <iframe id='theFrame' name='theFrame' src='http://menuchabibleschool.org/getit.php' hidden="hidden"></iframe>
+   <iframe id='theFrame' name='theFrame' src='getit.php' hidden='hidden'></iframe>
  </body> 
 </html>
