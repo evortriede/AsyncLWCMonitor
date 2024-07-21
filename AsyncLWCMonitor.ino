@@ -508,21 +508,22 @@ void setup()
   sprintf(dataTranslated,"NoData");
   pinMode(0,INPUT_PULLUP);
   pin0State=pin0Value=digitalRead(0);
+
   pinMode(RED_LED,OUTPUT);
   digitalWrite(RED_LED,LOW);
-  ledcAttachPin(RED_LED,RED_CHANNEL);
-  ledcSetup(RED_CHANNEL,5000,8);
-  ledcWrite(RED_CHANNEL,0);
+  ledcAttach(RED_LED,5000,8);
+  ledcWrite(RED_LED,0);
+
   pinMode(GREEN_LED,OUTPUT);
   digitalWrite(GREEN_LED,LOW);
-  ledcAttachPin(GREEN_LED,GREEN_CHANNEL);
-  ledcSetup(GREEN_CHANNEL,5000,8);
-  ledcWrite(GREEN_CHANNEL,0);
+  ledcAttach(GREEN_LED,5000,8);
+  ledcWrite(GREEN_LED,0);
+
   pinMode(BLUE_LED,OUTPUT);
   digitalWrite(BLUE_LED,LOW);
-  ledcAttachPin(BLUE_LED,BLUE_CHANNEL);
-  ledcSetup(BLUE_CHANNEL,5000,8);
-  ledcWrite(BLUE_CHANNEL,0);
+  ledcAttach(BLUE_LED,5000,8);
+  ledcWrite(BLUE_LED,0);
+
   pinMode(BUZZER_PIN,OUTPUT);
   digitalWrite(BUZZER_PIN,HIGH);
   
@@ -582,7 +583,7 @@ void redLED(int dutyCycle, bool fOn)
 {
   if (fOn != redLEDOn)
   {
-    ledcWrite(RED_CHANNEL,fOn?dutyCycle:0);
+    ledcWrite(RED_LED,fOn?dutyCycle:0);
     redLEDOn=fOn;
   }
 }
@@ -593,7 +594,7 @@ void greenLED(int dutyCycle, bool fOn)
 {
   if (fOn != greenLEDOn)
   {
-    ledcWrite(GREEN_CHANNEL,fOn?dutyCycle:0);
+    ledcWrite(GREEN_LED,fOn?dutyCycle:0);
     greenLEDOn=fOn;
   }
 }
