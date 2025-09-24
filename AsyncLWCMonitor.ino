@@ -1,8 +1,14 @@
+/*
+#ifndef WIFI_LORA_32_V2
+#define WIFI_LORA_32_V2
+#endif
+*/
+
 #include "AsyncLWCMonitor.h"
 
 #include "pages.h"
 
-static const char statusFmt[] = "%s,%i gal,%i,%i,%2.2f%%,%s,%i,%s,%s,%i,%s,%i";
+static const char statusFmt[] = "%s,%i gal,%i,%i,%2.2f%%,%s,%i,%s,%s,%i,%s,%i,%s";
 
 char request[128]; // we don't want this to be on the stack
 
@@ -76,7 +82,8 @@ void handleAsyncStatusUpdate()
   char sppm[16];
   sprintf(sppm,"%0.2f ppm",fppm);
   const char* chlStyle=(fppm<0.2)?"#FFFF00":(fppm>1.0)?"#FF0000":"#00FF00";
-  sprintf(wsStatusBuffer,statusFmt,dataTranslated,gallons,gph,gpd,duty,turbStyle,turb,sturb,chlStyle,chlFill,sppm,pump);
+  sprintf(wsStatusBuffer,statusFmt,dataTranslated,gallons,gph,gpd,duty,turbStyle,turb,sturb,chlStyle,chlFill,sppm,pump,
+          configData.captive_ssid);
   ws.textAll(String(wsStatusBuffer));
   sprintf(statusBuffer,"%i,%i,%i,%0.2f,%0.3f,%0.2f,%i\0",gallons,gph,gpd,duty,fturb,fppm,pump);
   writeToCloud(statusBuffer);
@@ -209,6 +216,17 @@ void webServerSetup()
       }
     }
   });
+  server.on("/favicon.png", HTTP_GET, [](AsyncWebServerRequest *request) {
+      request->send(200, "image/png", favicon, faviconlen);
+  });
+  unsigned int clen= collaps_base64(favicon64);
+  Serial.printf("collapsed len %u\n",clen);
+  faviconlen = decode_base64_length(favicon64);
+  Serial.printf("favicon len %u\n",faviconlen);
+  favicon = (byte*)malloc(faviconlen);
+  decode_base64(favicon64,favicon);
+  Serial.println("decoded");
+
   server.begin();
 }
 
@@ -487,6 +505,7 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
     case WS_EVT_CONNECT:
       Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
       ws.textAll(String(wsStatusBuffer));
+      fTextAll=true;
       break;
     case WS_EVT_DISCONNECT:
       Serial.printf("WebSocket client #%u disconnected\n", client->id());
@@ -503,51 +522,73 @@ void initWebSocket() {
   server.addHandler(&ws);
 }
 
+SSD1306Wire  factory_display(0x3c, 500000, SDA_OLED, SCL_OLED, GEOMETRY_128_64, RST_OLED); // addr , freq , i2c group , resolution , rst
+
 void setup() 
 {
+  Serial.begin(115200);
+  Serial.println("setup");
+	factory_display.init();
+	factory_display.clear();
+	factory_display.display();
   sprintf(dataTranslated,"NoData");
   pinMode(0,INPUT_PULLUP);
   pin0State=pin0Value=digitalRead(0);
 
-  pinMode(RED_LED,OUTPUT);
-  digitalWrite(RED_LED,LOW);
-  ledcAttach(RED_LED,5000,8);
-  ledcWrite(RED_LED,0);
+  pinMode(RED_LED_PIN,OUTPUT);
+  digitalWrite(RED_LED_PIN,LOW);
+//  ledcAttachPin(RED_LED_PIN,RED_CHANNEL);
+//  ledcSetup(RED_CHANNEL,5000,8);
+  ledcAttach(RED_LED_PIN,5000,8);
+  ledcWrite(RED_LED_PIN,0);
 
-  pinMode(GREEN_LED,OUTPUT);
-  digitalWrite(GREEN_LED,LOW);
-  ledcAttach(GREEN_LED,5000,8);
-  ledcWrite(GREEN_LED,0);
+  pinMode(GREEN_LED_PIN,OUTPUT);
+  digitalWrite(GREEN_LED_PIN,LOW);
+//  ledcAttachPin(GREEN_LED_PIN,GREEN_CHANNEL);
+//  ledcSetup(GREEN_CHANNEL,5000,8);
+  ledcAttach(GREEN_LED_PIN,5000,8);
+  ledcWrite(GREEN_LED_PIN,0);
 
-  pinMode(BLUE_LED,OUTPUT);
-  digitalWrite(BLUE_LED,LOW);
-  ledcAttach(BLUE_LED,5000,8);
-  ledcWrite(BLUE_LED,0);
+  pinMode(BLUE_LED_PIN,OUTPUT);
+  digitalWrite(BLUE_LED_PIN,LOW);
+//  ledcAttachPin(BLUE_LED_PIN,BLUE_CHANNEL);
+//  ledcSetup(BLUE_CHANNEL,5000,8);
+  ledcAttach(BLUE_LED_PIN,5000,8);
+  ledcWrite(BLUE_LED_PIN,0);
 
   pinMode(BUZZER_PIN,OUTPUT);
   digitalWrite(BUZZER_PIN,HIGH);
   
   //esp_log_set_vprintf(&myprintf);
   sprintf(msg,"%s","no data");
+
+  Serial.println("before Heltec.begin");
   
-  Heltec.begin(true /*DisplayEnable Enable*/, 
-               true /*Heltec.LoRa Disable*/, 
-               true /*Serial Enable*/, 
-               true /*PABOOST Enable*/, 
-               BAND /*long BAND*/);
+  Heltec.begin(false,// DisplayEnable Enable, 
+               true, //Heltec.LoRa Disable 
+               true, //Serial Enable
+               true, //PABOOST Enable 
+               BAND //long BAND
+               );
                
-  Serial.begin(115200);
+  Serial.println("after Heltec.begin");
+
+
+  //factory_display.flipScreenVertically();
+  factory_display.setFont(ArialMT_Plain_16);
+  factory_display.setTextAlignment(TEXT_ALIGN_LEFT);
+  factory_display.setLogBuffer(5, 64);
+  factory_display.clear();
+  factory_display.drawStringMaxWidth(0, 0, 128, "about to set up LoRa");
+  factory_display.display();
   
-  Heltec.display->flipScreenVertically();
-  Heltec.display->setFont(ArialMT_Plain_16);
-  Heltec.display->setTextAlignment(TEXT_ALIGN_LEFT);
-  Heltec.display->setLogBuffer(5, 64);
-  Heltec.display->clear();
-  Heltec.display->drawStringMaxWidth(0, 0, 128, "about to set up LoRa");
-  Heltec.display->display();
-  
+  Serial.println("before eepromSetup");
+
   eepromSetup();
   
+  Serial.println("after eepromSetup");
+
+  //LoRa.begin(BAND, true);
   LoRa.setSpreadingFactor(configData.sf);
   LoRa.receive();
 
@@ -583,7 +624,7 @@ void redLED(int dutyCycle, bool fOn)
 {
   if (fOn != redLEDOn)
   {
-    ledcWrite(RED_LED,fOn?dutyCycle:0);
+    ledcWrite(RED_LED_PIN,fOn?dutyCycle:0);
     redLEDOn=fOn;
   }
 }
@@ -594,7 +635,7 @@ void greenLED(int dutyCycle, bool fOn)
 {
   if (fOn != greenLEDOn)
   {
-    ledcWrite(GREEN_LED,fOn?dutyCycle:0);
+    ledcWrite(GREEN_LED_PIN,fOn?dutyCycle:0);
     greenLEDOn=fOn;
   }
 }
@@ -669,9 +710,9 @@ void loop()
     }
     else
     {
-      Heltec.display->clear();
-      Heltec.display->drawString(x, y, msg);
-      Heltec.display->display();
+      factory_display.clear();
+      factory_display.drawString(x, y, msg);
+      factory_display.display();
     }
     x = (x+xinc);
     if (x>=50)
@@ -713,5 +754,11 @@ void loop()
   if (WiFi.status() != WL_CONNECTED)
   {
     reconnectWiFi();
+  }
+
+  if (fTextAll)
+  {
+    fTextAll=false;
+    ws.textAll(String(wsStatusBuffer));
   }
 }

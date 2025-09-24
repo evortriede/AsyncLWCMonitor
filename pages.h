@@ -54,11 +54,13 @@ static const char serverIndex[] PROGMEM =R"(
 static const char statusPage[] PROGMEM =R"(
 <html>
   <head>
+    <title>London Water Co-op</title>
+    <link rel="icon" type="image/x-icon" href="favicon.png">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <script>
-      var gateway = `ws://${window.location.hostname}/ws`;
+      var gateway = `ws://${window.location.hostname}:${window.location.port}/ws`;
       var websocket;
       function initWebSocket() {
         console.log('Trying to open a WebSocket connection...');
@@ -100,6 +102,7 @@ static const char statusPage[] PROGMEM =R"(
         document.getElementById('gpd').value=rg[3];
         document.getElementById('duty').value=rg[4];
         document.getElementById('pump').value=rg[11];
+        document.getElementById("titleDiv").innerHTML=rg[12];
 
         rgg=rg[1].split(' ');
         let gal=rgg[0];
@@ -137,6 +140,7 @@ static const char statusPage[] PROGMEM =R"(
 
   </head>
   <body onLoad="initWebSocket();">
+    <div id="titleDiv"></div><br>
     <canvas id="TankLevel" width="200" height="500"
     style="border:1px solid #c3c3c3;">
     Your browser does not support the canvas element.
@@ -225,4 +229,38 @@ static const char configFmt[] PROGMEM =R"(
     </div>
   </body>
 </html>
+)";
+
+static unsigned char favicon64[] =R"(
+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
 )";

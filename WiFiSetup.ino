@@ -89,8 +89,8 @@ void displayIPs(int x, int y, boolean fSerialPrint)
   IPAddress myIP = WiFi.softAPIP();
   sprintf(rgIPTxtAP,"%u.%u.%u.%u",myIP[0],myIP[1],myIP[2],myIP[3]);
   
-  Heltec.display->clear();
-  Heltec.display->drawStringMaxWidth(x, y, 128, rgIPTxtAP);
+  factory_display.clear();
+  factory_display.drawStringMaxWidth(x, y, 128, rgIPTxtAP);
 
   if (fSerialPrint)
   {
@@ -100,9 +100,9 @@ void displayIPs(int x, int y, boolean fSerialPrint)
 
   myIP = WiFi.localIP();
   sprintf(rgIPTxtSTN,"%u.%u.%u.%u",myIP[0],myIP[1],myIP[2],myIP[3]);
-  Heltec.display->drawStringMaxWidth(x, y+16, 128, rgIPTxtSTN);
+  factory_display.drawStringMaxWidth(x, y+16, 128, rgIPTxtSTN);
 
-  Heltec.display->display();
+  factory_display.display();
 
   if (fSerialPrint)
   {
