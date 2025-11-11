@@ -60,6 +60,11 @@ void wifiSTASetup()
   Serial.print("Connecting to ");
   Serial.println(hotspot->ssid);
 
+  if (configData.finalOctet != 0)
+  {
+    IPAddress addr(192, 168, 10, configData.finalOctet);
+    WiFi.config(addr);
+  }
   WiFi.begin(hotspot->ssid, hotspot->pass);
   Serial.println("");
 

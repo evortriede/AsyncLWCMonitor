@@ -221,6 +221,7 @@ static const char configFmt[] PROGMEM =R"(
         Duck DNS Name <input type="text" name="dns_name" style="font-size:40px" value="%s"></input><br>
         Remote Server <input type="text" name="rmtserver" style="font-size:40px" value="%s"></input><br>
         Conversion factor <input type="number" step="0.1" name="factor" style="font-size:30px" value="%0.2f"></input><br>
+        IP Address Final Octet <input type="number" step="1" name="final_octet" style="font-size:30px" value="%i"></input><br>
         <input type="submit" style="font-size:40px"></input>
       </form>
       <br>

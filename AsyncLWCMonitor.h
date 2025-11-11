@@ -31,9 +31,10 @@ typedef struct
   int sf;
   char remoteServer[64];
   float chlConversionFactor;
+  int finalOctet;
 } config_data_t;
 
-config_data_t configData={"TP-Link_32E6","","ChangeMe","admin","LWCMonitor",9,"\0",2180.0};
+config_data_t configData={"TP-Link_32E6","","ChangeMe","admin","LWCMonitor",9,"\0",2180.0,0};
 
 typedef struct 
 {

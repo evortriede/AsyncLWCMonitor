@@ -102,6 +102,7 @@ void handleConfig(AsyncWebServerRequest *request)
          ,configData.dnsName
          ,configData.remoteServer
          ,configData.chlConversionFactor
+         ,configData.finalOctet
          );
   request->send(200, "text/html", httpMsg);
 }
@@ -128,6 +129,7 @@ void handleSet(AsyncWebServerRequest *request)
   strcpy(configData.dnsName,request->arg("dns_name").c_str());
   strcpy(configData.remoteServer,request->arg("rmtserver").c_str());
   configData.chlConversionFactor=atof(request->arg("factor").c_str());
+  configData.finalOctet=atoi(request->arg("final_octet").c_str());
 
   nvs_handle handle;
   esp_err_t res = nvs_open("lwc_data", NVS_READWRITE, &handle);
